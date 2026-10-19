@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'nonce-{{nonce}}'; script-src 'nonce-{{nonce}}';">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style nonce="{{nonce}}">
+:root {
+	--accent: var(--vscode-charts-green);
+	--startup: var(--vscode-charts-yellow);
+	--danger: var(--vscode-charts-red);
+	--muted: var(--vscode-descriptionForeground);
+	--surface: color-mix(in srgb, var(--vscode-foreground) 8%, transparent);
+}
+[hidden] { display: none !important; }
+body {
+	margin: 0;
+	padding: 4px 8px 12px;
+	background: var(--vscode-sideBar-background);
+	color: var(--vscode-foreground);
+	font-family: var(--vscode-font-family);
+	font-size: var(--vscode-font-size);
+}
+button { font: inherit; color: inherit; }
+
+summary {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 30px;
+	padding: 0 6px;
+	list-style: none;
+	cursor: pointer;
+	user-select: none;
+	font-size: 11px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+summary::-webkit-details-marker { display: none; }
+summary:focus-visible { outline: 1px solid var(--vscode-focusBorder); border-radius: 4px; }
+.chevron { display: flex; transition: transform 0.1s; }
+details:not([open]) .chevron { transform: rotate(-90deg); }
+.link {
+	margin-left: auto;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	font-size: 12px;
+	letter-spacing: normal;
+	text-transform: none;
+	text-decoration: underline;
+	color: var(--muted);
+}
+.link:hover { color: var(--vscode-foreground); }
+
+.cards { display: flex; flex-direction: column; gap: 6px; padding: 4px 0 12px; }
+.card {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	box-sizing: border-box;
+	height: 38px;
+	padding: 0 7px 0 12px;
+	border: 1px solid transparent;
+	border-radius: 7px;
+	background: var(--surface);
+	cursor: pointer;
+}
+.card:hover { background: color-mix(in srgb, var(--vscode-foreground) 12%, transparent); }
+.card.entering { animation: slide-in 0.18s ease-out; }
+.card.leaving { overflow: hidden; pointer-events: none; animation: fade-out 0.18s ease-in forwards; }
+@keyframes slide-in { from { opacity: 0; transform: translateY(-8px); } }
+@keyframes fade-out { to { opacity: 0; height: 0; border-width: 0; } }
+.card .icon-button { background: var(--surface); }
+.card .icon-button.terminal { opacity: 0; }
+.card:hover .icon-button.terminal, .card:focus-within .icon-button.terminal { opacity: 1; }
+.card.failed {
+	border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+	background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+.card.failed .icon-button.dismiss { background: transparent; color: var(--muted); }
+.live-dot {
+	width: 8px;
+	height: 8px;
+	flex-shrink: 0;
+	border-radius: 50%;
+	background: var(--accent);
+	animation: pulse 1.8s ease-in-out infinite;
+}
+.failed .live-dot { background: var(--danger); animation: none; }
+.starting .live-dot { background: var(--startup); animation: blink 0.8s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.4; } }
+@keyframes blink { 50% { opacity: 0.25; } }
+.card-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.card-status { flex-shrink: 0; margin-left: auto; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.starting .card-status { color: var(--startup); }
+.failed .card-status { color: var(--danger); }
+.startup-badge { display: flex; flex-shrink: 0; color: var(--startup); }
+
+.port { flex-shrink: 0; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.icon-button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	flex-shrink: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	background: transparent;
+	cursor: pointer;
+}
+.icon-button:hover { background: var(--vscode-toolbar-hoverBackground); }
+.icon-button:focus-visible { outline: 1px solid var(--vscode-focusBorder); }
+.icon-button.startup { color: var(--startup); }
+
+.filter {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 30px;
+	margin: 4px 0 8px;
+	padding: 0 10px;
+	border: 1px solid var(--vscode-input-border, transparent);
+	border-radius: 6px;
+	background: var(--vscode-input-background);
+	color: var(--muted);
+}
+.filter:focus-within { border-color: var(--vscode-focusBorder); }
+.filter input {
+	flex: 1;
+	min-width: 0;
+	border: 0;
+	outline: 0;
+	background: transparent;
+	font: inherit;
+	color: var(--vscode-input-foreground);
+}
+.filter input::placeholder { color: var(--vscode-input-placeholderForeground); }
+
+.row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	height: 28px;
+	padding: 0 4px 0 13px;
+	border-radius: 6px;
+}
+.row:hover { background: var(--vscode-list-hoverBackground); }
+.idle-dot {
+	width: 8px;
+	height: 8px;
+	flex-shrink: 0;
+	box-sizing: border-box;
+	border: 1px solid var(--muted);
+	border-radius: 50%;
+}
+.row-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* opacity instead of visibility so the buttons stay reachable by keyboard */
+.actions { display: flex; gap: 2px; opacity: 0; }
+.row:hover .actions, .row:focus-within .actions { opacity: 1; }
+.group {
+	display: flex;
+	align-items: flex-end;
+	gap: 6px;
+	height: 26px;
+	padding: 0 0 4px 13px;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+.empty { margin: 4px 0; padding: 0 13px; color: var(--muted); }
+
+.tooltip {
+	position: fixed;
+	left: 8px;
+	z-index: 1;
+	width: min(260px, calc(100vw - 16px));
+	box-sizing: border-box;
+	padding: 10px 12px;
+	border: 1px solid var(--vscode-editorHoverWidget-border);
+	border-radius: 6px;
+	background: var(--vscode-editorHoverWidget-background);
+	color: var(--vscode-editorHoverWidget-foreground);
+	box-shadow: 0 2px 8px var(--vscode-widget-shadow);
+	pointer-events: none;
+}
+.tooltip-title { font-weight: 600; }
+.tooltip-project {
+	margin-top: 6px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid var(--vscode-editorHoverWidget-border);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-family: var(--vscode-editor-font-family);
+	color: var(--muted);
+}
+.tooltip-details { display: grid; grid-template-columns: auto 1fr; gap: 4px 24px; margin: 8px 0 0; }
+.tooltip-details dt { color: var(--muted); }
+.tooltip-details dd { margin: 0; }
+.tooltip-details .syncing { color: var(--accent); }
+.tooltip-details .starting { color: var(--startup); }
+.tooltip-details .failed { color: var(--danger); }
+</style>
+</head>
+<body>
+<details id="syncing" open hidden>
+	<summary>
+		<span class="chevron"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></span>
+		<span>Syncing</span>
+		<button id="stop-all" class="link">Stop all</button>
+	</summary>
+	<div id="syncing-list" class="cards"></div>
+</details>
+<details open>
+	<summary>
+		<span class="chevron"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></span>
+		<span>Projects</span>
+	</summary>
+	<label class="filter">
+		<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>
+		<input id="filter" placeholder="Filter projects" aria-label="Filter projects">
+	</label>
+	<div id="projects-list"></div>
+	<p id="empty" class="empty" hidden></p>
+</details>
+<div id="tooltip" class="tooltip" role="tooltip" hidden>
+	<div id="tooltip-title" class="tooltip-title"></div>
+	<div id="tooltip-project" class="tooltip-project"></div>
+	<dl class="tooltip-details">
+		<dt>Status</dt><dd id="tooltip-status"></dd>
+		<dt>Port</dt><dd id="tooltip-port"></dd>
+	</dl>
+</div>
+<script nonce="{{nonce}}">
+const PLAY_ICON = '<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M5 3.5v9l7-4.5z"/></svg>'
+const STOP_ICON = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/></svg>'
+const STARTUP_ICON = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5c2.5 1.5 3.5 4 3 7.5l-1.5 2h-3L5 9c-.5-3.5.5-6 3-7.5z"/><circle cx="8" cy="6" r="1.2"/></svg>'
+const PIN_ICON = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M6 1.5h4l-.6 4.5 2.6 2.5v1.2H4V8.5L6.6 6z"/><path d="M8 9.7V15"/></svg>'
+const PINNED_ICON = '<svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 1.5h4l-.6 4.5 2.6 2.5v1.2H4V8.5L6.6 6z"/><path d="M7.4 9.7h1.2V15H7.4z"/></svg>'
+const RETRY_ICON = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.5"/><path d="M12 2v3H9"/></svg>'
+const DISMISS_ICON = '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8"/></svg>'
+const TERMINAL_ICON = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 5 3 3-3 3M8 11h5"/></svg>'
+const TOOLTIP_DELAY = 500
+const TOOLTIP_GAP = 4
+
+const vscode = acquireVsCodeApi()
+const syncingSection = document.getElementById("syncing")
+const syncingList = document.getElementById("syncing-list")
+const projectsList = document.getElementById("projects-list")
+const filterInput = document.getElementById("filter")
+const emptyMessage = document.getElementById("empty")
+const tooltip = document.getElementById("tooltip")
+const tooltipStatus = document.getElementById("tooltip-status")
+let places = []
+let tooltipTimer
+
+function hideTooltip() {
+	clearTimeout(tooltipTimer)
+	tooltip.hidden = true
+}
+
+function showTooltip(element, place) {
+	const startupSuffix = place.isStartup ? " [STARTUP]" : ""
+	const statusTexts = {
+		syncing: `syncing${startupSuffix}`,
+		starting: `starting${startupSuffix}`,
+		failed: `failed${startupSuffix} · exit code ${place.exitCode}`,
+		idle: "idle",
+	}
+	document.getElementById("tooltip-title").textContent = place.group ? `${place.group} · ${place.label}` : place.label
+	document.getElementById("tooltip-project").textContent = place.project
+	document.getElementById("tooltip-port").textContent = place.port
+	tooltipStatus.textContent = statusTexts[place.status]
+	tooltipStatus.className = place.status
+	tooltip.hidden = false
+
+	// below the row, or above it when there's no room
+	const bounds = element.getBoundingClientRect()
+	const fitsBelow = bounds.bottom + TOOLTIP_GAP + tooltip.offsetHeight <= window.innerHeight
+	tooltip.style.top = `${fitsBelow ? bounds.bottom + TOOLTIP_GAP : bounds.top - TOOLTIP_GAP - tooltip.offsetHeight}px`
+}
+
+function addTooltip(element, place) {
+	element.addEventListener("mouseenter", () => {
+		tooltipTimer = setTimeout(() => showTooltip(element, place), TOOLTIP_DELAY)
+	})
+	element.addEventListener("mouseleave", hideTooltip)
+}
+
+// names come from file names, so they go in as text and never as html
+function createText(className, text) {
+	const span = document.createElement("span")
+	span.className = className
+	span.textContent = text
+	return span
+}
+
+function createButton(icon, label, message) {
+	const button = document.createElement("button")
+	button.className = "icon-button"
+	button.innerHTML = icon
+	button.title = label
+	button.setAttribute("aria-label", label)
+	button.addEventListener("click", () => vscode.postMessage(message))
+	return button
+}
+
+function createCard(place) {
+	const card = document.createElement("div")
+	card.className = `card ${place.status}`
+	card.dataset.id = place.id
+	card.append(createText("live-dot", ""), createText("card-name", place.label))
+
+	if (place.isStartup) {
+		const badge = createText("startup-badge", "")
+		badge.innerHTML = STARTUP_ICON
+		badge.title = "Startup"
+		card.append(badge)
+	}
+
+	const statusTexts = { syncing: `:${place.port}`, starting: "starting…", failed: "failed" }
+	const terminalButton = createButton(TERMINAL_ICON, "Show terminal", { type: "showTerminal", id: place.id })
+	terminalButton.classList.add("terminal")
+	card.append(createText("card-status", statusTexts[place.status]), terminalButton)
+
+	if (place.status === "failed") {
+		const retryType = place.isStartup ? "syncStartup" : "sync"
+		const dismissButton = createButton(DISMISS_ICON, "Dismiss", { type: "dismiss", id: place.id })
+		dismissButton.classList.add("dismiss")
+		card.append(createButton(RETRY_ICON, `Retry ${place.label}`, { type: retryType, id: place.id }), dismissButton)
+	} else {
+		card.append(createButton(STOP_ICON, `Stop ${place.label}`, { type: "stop", id: place.id }))
+	}
+
+	card.addEventListener("click", (event) => {
+		if (event.target.closest("button")) return
+		vscode.postMessage({ type: "showTerminal", id: place.id })
+	})
+	addTooltip(card, place)
+	return card
+}
+
+function renderCards(active) {
+	const previousCards = [...syncingList.children]
+	const cards = active.map((place) => {
+		const card = createCard(place)
+		if (!previousCards.some((previous) => previous.dataset.id === place.id)) card.classList.add("entering")
+		return card
+	})
+
+	// stopped cards stay where they were until they've faded out
+	previousCards.forEach((previous, index) => {
+		if (active.some((place) => place.id === previous.dataset.id)) return
+		cards.splice(index, 0, previous)
+		if (previous.classList.contains("leaving")) return
+
+		previous.classList.add("leaving")
+		previous.addEventListener("animationend", (event) => {
+			if (event.target !== previous) return
+			previous.remove()
+			syncingSection.hidden = syncingList.children.length === 0
+		})
+	})
+	syncingList.replaceChildren(...cards)
+	syncingSection.hidden = cards.length === 0
+}
+
+function createRow(place) {
+	const row = document.createElement("div")
+	row.className = "row"
+	row.append(createText("idle-dot", ""), createText("row-name", place.label))
+	if (place.hasCustomPort) row.append(createText("port", `:${place.port}`))
+
+	const actions = document.createElement("div")
+	actions.className = "actions"
+	const pinLabel = `${place.isPinned ? "Unpin" : "Pin"} ${place.label}`
+	actions.append(createButton(place.isPinned ? PINNED_ICON : PIN_ICON, pinLabel, { type: "togglePin", id: place.id }))
+	if (place.hasStartup) {
+		const startupButton = createButton(STARTUP_ICON, `Serve ${place.label} [STARTUP]`, { type: "syncStartup", id: place.id })
+		startupButton.classList.add("startup")
+		actions.append(startupButton)
+	}
+	// serve stays rightmost so it's in the same spot on every row
+	actions.append(createButton(PLAY_ICON, `Serve ${place.label}`, { type: "sync", id: place.id }))
+	row.append(actions)
+	addTooltip(row, place)
+	return row
+}
+
+function renderProjects() {
+	// redrawing replaces the hovered row, which never fires mouseleave
+	hideTooltip()
+	const query = filterInput.value.trim().toLowerCase()
+	const shown = places.filter((place) => {
+		const matchesQuery = `${place.group ?? ""} ${place.label}`.toLowerCase().includes(query)
+		return place.status === "idle" && matchesQuery
+	})
+	const pinned = shown.filter((place) => place.isPinned)
+	const rows = []
+
+	if (pinned.length > 0) {
+		const pinnedLabel = createText("group", "Pinned")
+		pinnedLabel.insertAdjacentHTML("afterbegin", PINNED_ICON)
+		rows.push(pinnedLabel, ...pinned.map(createRow))
+	}
+
+	let currentGroup
+	for (const place of shown) {
+		if (place.isPinned) continue
+		// without their own label, ungrouped projects would read as part of the pinned list
+		const group = place.group ?? (pinned.length > 0 ? "All" : undefined)
+		if (group && group !== currentGroup) rows.push(createText("group", group))
+		currentGroup = group
+		rows.push(createRow(place))
+	}
+	projectsList.replaceChildren(...rows)
+
+	const hasNoMatches = query && shown.length === 0
+	emptyMessage.hidden = places.length > 0 && !hasNoMatches
+	emptyMessage.textContent = places.length === 0 ? "No *.project.json files found in this workspace." : "No matching projects."
+}
+
+window.addEventListener("message", (event) => {
+	places = event.data.places
+	renderCards(places.filter((place) => place.status !== "idle"))
+	renderProjects()
+})
+
+filterInput.addEventListener("input", renderProjects)
+window.addEventListener("scroll", hideTooltip)
+
+// the button sits inside the summary, so keep its click from collapsing the section
+document.getElementById("stop-all").addEventListener("click", (event) => {
+	event.preventDefault()
+	vscode.postMessage({ type: "stopAll" })
+})
+
+vscode.postMessage({ type: "ready" })
+</script>
+</body>
+</html>

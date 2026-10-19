@@ -1,0 +1,71 @@
+{
+	"name": "rojo-hub",
+	"displayName": "Rojo Hub",
+	"description": "A sidebar listing every Rojo project in your workspace, with one-click serve and stop.",
+	"version": "0.1.0",
+	"publisher": "alphynaud",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/cutiekei/rojo-hub"
+	},
+	"categories": ["Other"],
+	"keywords": ["rojo", "roblox", "luau"],
+	"engines": {
+		"vscode": "^1.85.0"
+	},
+	"main": "./extension.js",
+	"activationEvents": [],
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "rojoHub",
+					"title": "Rojo Hub",
+					"icon": "media/rojo.svg"
+				}
+			]
+		},
+		"views": {
+			"rojoHub": [
+				{
+					"type": "webview",
+					"id": "rojoHub.places",
+					"name": "Rojo Hub"
+				}
+			]
+		},
+		"configuration": {
+			"title": "Rojo Hub",
+			"properties": {
+				"rojoHub.exclude": {
+					"type": "array",
+					"items": { "type": "string" },
+					"default": [],
+					"description": "Glob patterns for project files to hide from the panel, relative to the workspace folder (for example \"sourcemap.project.json\")."
+				}
+			}
+		},
+		"commands": [
+			{
+				"command": "rojoHub.stop",
+				"title": "Rojo: Stop All Syncing",
+				"icon": "$(debug-stop)"
+			},
+			{
+				"command": "rojoHub.refresh",
+				"title": "Rojo: Refresh Projects",
+				"icon": "$(refresh)"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "rojoHub.refresh",
+					"when": "view == rojoHub.places",
+					"group": "navigation"
+				}
+			]
+		}
+	}
+}
